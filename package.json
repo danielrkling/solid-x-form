@@ -1,17 +1,17 @@
 {
-  "name": "{{name_of_lib}}",
-  "version": "0.0.0",
-  "description": "{{desc_of_lib}}",
+  "name": "solid-x-form",
+  "version": "0.1.0",
+  "description": "Recursive form state management library",
   "license": "MIT",
-  "author": "{{me}}",
+  "author": "danielrkling",
   "contributors": [],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/{{me}}/{{name_of_lib}}.git"
+    "url": "git+https://github.com/danielrkling/solid-x-form.git"
   },
-  "homepage": "https://github.com/{{me}}/{{name_of_lib}}#readme",
+  "homepage": "https://github.com/danielrkling/solid-x-form#readme",
   "bugs": {
-    "url": "https://github.com/{{me}}/{{name_of_lib}}/issues"
+    "url": "https://github.com/danielrkling/solid-x-form/issues"
   },
   "files": [
     "dist"
@@ -24,10 +24,6 @@
   "types": "./dist/index.d.ts",
   "browser": {},
   "exports": {
-    "solid": {
-      "development": "./dist/dev.jsx",
-      "import": "./dist/index.jsx"
-    },
     "development": {
       "import": {
         "types": "./dist/index.d.ts",
