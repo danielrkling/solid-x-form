@@ -46,13 +46,13 @@ export function createField<
   TKey extends keyof TParent = keyof TParent,
   TValue extends any = TParent[TKey],
 >(props: FieldProps<TParent, TKey, TValue>): FieldApi<TParent, TKey, TValue> {
-  const value = createMemo(() => props.control.value()?.[props.name] as TValue)
+  const value = createMemo(() => props.control.value()[props.name] as TValue)
 
   // Setter function to update the field value within the parent object.
   //@ts-expect-error
   const setValue: Setter<TValue> = (value: TValue) =>
     props.control.setValue((prev: TParent) => {
-      const newValue: TValue = typeof value === 'function' ? value(prev?.[props.name]) : value
+      const newValue: TValue = typeof value === 'function' ? value(prev[props.name]) : value
       if (Array.isArray(prev)) {
         const array = [...prev]
         array.splice(Number(props.name), 1, newValue)
