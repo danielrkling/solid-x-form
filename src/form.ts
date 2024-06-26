@@ -1,15 +1,20 @@
 import { Accessor, batch, createEffect, createMemo, createSignal, JSX, on, Setter } from 'solid-js'
 
-import { Control, ControlProps, createControl, createFieldComponent, ExposedControlProps, FieldComponent, ValidationMethod } from '.'
+import {
+  Control,
+  ControlProps,
+  createControl,
+  createFieldComponent,
+  ExposedControlProps,
+  FieldComponent,
+  ValidationMethod,
+} from '.'
 
 /**
  * Props for a Form component.
  * @template TValue - The type of the form's initial value object.
  */
-export type FormProps<TValue extends object> = Pick<
-  ControlProps<TValue>,
-  'validate'
-> & {
+export type FormProps<TValue extends object> = Pick<ControlProps<TValue>, 'validate'> & {
   initialValue: TValue // Initial value object for the form.
   validationMethod?: ValidationMethod
 }
@@ -40,14 +45,16 @@ export type FormApi<TValue extends object> = ExposedControlProps<TValue> & {
 export function createForm<TValue extends object>(props: FormProps<TValue>): FormApi<TValue> {
   const [value, setValue] = createSignal(props.initialValue) // State signal for form value.
   const [submitCount, setSubmitCount] = createSignal(0)
-  const isSubmitted = createMemo(()=>submitCount()>0)
+  const isSubmitted = createMemo(() => submitCount() > 0)
   const [isSubmitting, setIsSubmitting] = createSignal(false) // State signal for form submission process.
   const [response, setResponse] = createSignal<any>() // State signal for form submission response.
 
-
-  createEffect(()=>{
-    if (props.validationMethod=="onChange" || (props.validationMethod=="onChangeAfterSubmit" &&isSubmitted())){
-      createEffect(on(value,()=>control.validate()))
+  createEffect(() => {
+    if (
+      props.validationMethod == 'onChange' ||
+      (props.validationMethod == 'onChangeAfterSubmit' && isSubmitted())
+    ) {
+      createEffect(on(value, () => control.validate()))
     }
   })
 
@@ -57,8 +64,6 @@ export function createForm<TValue extends object>(props: FormProps<TValue>): For
     setValue,
     validate: props.validate,
   })
-
-  
 
   // Handles form submission process.
   const handleSubmit = async (
@@ -82,7 +87,7 @@ export function createForm<TValue extends object>(props: FormProps<TValue>): For
       setResponse(e) // Set response to error if validation fails.
     } finally {
       setIsSubmitting(false) // Set form submitting status to false.
-      setSubmitCount(v=>v+1)
+      setSubmitCount(v => v + 1)
     }
   }
 
