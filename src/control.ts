@@ -1,26 +1,37 @@
-import { Accessor, Setter, batch, createEffect, createMemo, createSignal, on } from 'solid-js'
+import { validate } from "@modular-forms/solid";
+import {
+  Accessor,
+  Setter,
+  batch,
+  createEffect,
+  createMemo,
+  createSignal,
+  on,
+} from "solid-js";
 
-export type Fields<T> = T extends Array<infer TValue>
-  ? Array<Control<TValue> | undefined>
-  : T extends object
-  ? {
-      [K in KeyOf<T>]: Control<ForceLookup<T, K>> | undefined
-    }
-  : {}
+// export type Fields<T> = T extends Array<infer TValue>
+//   ? Array<Control<TValue> | undefined>
+//   : T extends object
+//   ? {
+//       [K in KeyOf<T>]: Control<ForceLookup<T, K>> | undefined;
+//     }
+//   : {};
 
-export type KeyOf<TParent extends object> = keyof TParent
+export type Fields<T> = Map<keyof T, Control<any>>;
 
-export type ForceLookup<T, K> = T[K & keyof T] // no error
+export type KeyOf<TParent extends object> = keyof TParent;
+
+export type ForceLookup<T, K> = T[K & keyof T]; // no error
 
 export type ValidationMethod =
-  | 'onChange'
-  | 'onChangeAfterSubmit'
-  | 'onChangeAfterBlur'
-  | 'onBlur'
-  | 'onBlurAfterSubmit'
-  | 'onSubmit'
+  | "onChange"
+  | "onChangeAfterSubmit"
+  // | "onChangeAfterBlur"
+  // | "onBlur"
+  // | "onBlurAfterSubmit"
+  | "onSubmit";
 
-export type Validate<T> = (value: T) => string | Promise<string>
+export type Validate<T> = (value: T) => string | Promise<string>;
 
 /**
  * Props for controlling and validating a form input or component.
@@ -28,36 +39,15 @@ export type Validate<T> = (value: T) => string | Promise<string>
  * @template T - The type of value controlled by the component.
  */
 export type ControlProps<T> = {
-  /**
-   * Accessor to get the value of the controlled component.
-   */
-  value: Accessor<T>
+  /**  Accessor to get the value of the controlled component. */
+  value: Accessor<T>;
 
-  /**
-   * Function to set the value of the controlled component.
-   */
-  setValue: Setter<T>
+  /** Function to set the value of the controlled component. */
+  setValue: Setter<T>;
 
-  /**
-   * Accessor indicating if the form containing this control has been submitted.
-   */
-  isSubmitted: Accessor<boolean>
-
-  /**
-   * Accessor indicating if the form containing this control is currently submitting.
-   */
-  isSubmitting: Accessor<boolean>
-
-  /**
-   * Optional function to validate the value of the controlled component.
-   */
-  validate?: Validate<T>
-
-  /**
-   * Optional method specifying when to perform validation (e.g., on change, blur, submit).
-   */
-  validationMethod?: ValidationMethod
-}
+  /** Optional function to validate the value of the controlled component. */
+  validate?: Validate<T>;
+};
 
 /**
  * Represents the control interface for managing form fields and their state.
@@ -66,234 +56,168 @@ export type ControlProps<T> = {
  */
 export type Control<T> = {
   /** Accessor for managing the fields map if the initial value is an object; otherwise, an array. */
-  fields: Accessor<Fields<T>>
+  fields: Accessor<Fields<T>>;
+  setFields: Setter<Fields<T>>;
+
+  getField: <TKey extends keyof T>(name: TKey) => Control<T[TKey]>;
 
   /** Accessor for managing the list of fields as an array. */
-  fieldList: Accessor<Control<any>[]>
+  fieldArray: Accessor<Control<any>[]>;
 
   /** Accessor for the reactive value of the controlled component. */
-  value: Accessor<T>
+  value: Accessor<T>;
 
   /** Setter function to update the value of the controlled component. */
-  setValue: Setter<T>
+  setValue: Setter<T>;
 
   /** Initial value of the controlled component. */
-  initialValue: T
+  initialValue: T;
 
   /** Accessor for getting the error state of the controlled component. */
-  error: Accessor<string>
-
-  /** Accessor for getting the error state of the controlled component and children. */
-  errorList: Accessor<string[]>
+  error: Accessor<string>;
 
   /** Accessor indicating whether the controlled component has been edited (dirty). */
-  isDirty: Accessor<boolean>
+  isDirty: Accessor<boolean>;
 
   /** Accessor indicating whether the controlled component is equal to its initial state (pristine). */
-  isPristine: Accessor<boolean>
+  isPristine: Accessor<boolean>;
 
   /** Asynchronous function to trigger validation of the controlled component. */
-  validate: (recursive?: boolean) => Promise<any>
+  validate: () => Promise<boolean>;
 
   /** Accessor indicating whether the controlled component is currently being validated. */
-  isValidating: Accessor<boolean>
+  isValidating: Accessor<boolean>;
 
   /** Accessor indicating whether the controlled component has been validated for its current value. Changes to false when value changes until its validated again. */
-  isValidated: Accessor<boolean>
+  isValidated: Accessor<boolean>;
 
   /** Accessor indicating whether the controlled component is currently considered valid. Only true if isValidated() is true */
-  isValid: Accessor<boolean>
+  isValid: Accessor<boolean>;
 
   /** Accessor indicating whether the controlled component is currently considered invalid. Only true if isValidated() is true */
-  isInvalid: Accessor<boolean>
-
-  /** Accessor indicating whether the form has been submitted. */
-  isSubmitted: Accessor<boolean>
-
-  /** Accessor indicating whether the form is currently submitting. */
-  isSubmitting: Accessor<boolean>
+  isInvalid: Accessor<boolean>;
 
   /** Reference to the controlled component element. */
-  ref: any
+  ref: any;
 
   /** Function to focus on the first error within the controlled component. */
-  focusError: () => boolean
+  focusError: () => boolean;
+};
 
-  /** Accessor indicating whether the controlled component has been touched (interacted with). */
-  isTouched: Accessor<boolean>
+type HiddenControlProps =
+  | "setFields"
+  | "fieldArray"
+  | "fields"
+  | "focusError"
+  | "getField";
+export const hiddenControlProps: HiddenControlProps[] = [
+  "setFields",
+  "fieldArray",
+  "fields",
+  "focusError",
+  "getField",
+];
 
-  /** Setter function to update the touched state of the controlled component. */
-  setIsTouched: Setter<boolean>
-
-  /**
-   * Method to register a field within the form control.
-   * @typeparam TKey - The key (name) of the field to register.
-   */
-  registerField<TKey extends keyof T>(name: TKey, control: Control<T[TKey]>): void
-
-  /**
-   * Method to unregister a field from the form control.
-   * @typeparam TKey - The key (name) of the field to unregister.
-   */
-  unregisterField<TKey extends keyof T>(name: TKey): void
-
-  /** Validation method specifying when to perform validation (e.g., on blur, change). */
-  validationMethod: ValidationMethod
-
-  /** Function to handle the onBlur event for form fields. */
-  onBlur: () => void
-}
+export type ExposedControlProps<T> = Omit<Control<T>, HiddenControlProps>;
 
 export function createControl<T>(props: ControlProps<T>): Control<T> {
-  const method = props.validationMethod ?? 'onSubmit'
-  const initialValue = props.value()
-  const [fields, setFields] = createSignal<Fields<T>>(
-    (Array.isArray(initialValue) ? [] : {}) as Fields<T>,
-  )
-  const fieldList: Accessor<Control<any>[]> = createMemo(() => {
-    const f = fields()
-    if (Array.isArray(f)) {
-      return f
-    } else {
-      return Object.values(f)
-    }
-  })
+  const { value, setValue } = props;
+  const initialValue = value();
 
-  const [error, setError] = createSignal('')
-  const [_isValidating, setIsValidating] = createSignal(false)
+  const [error, setError] = createSignal("");
+  const [_isValidating, setIsValidating] = createSignal(false);
+  const [isValidated, setIsValidated] = createSignal(false);
+  const [getRef, ref] = createSignal<any>();
+
+  //   const [fields, setFields] = createSignal<Fields<T>>(
+  //     (Array.isArray(initialValue) ? [] : {}) as Fields<T>
+  //   );
+  const [fields, setFields] = createSignal(new Map<keyof T, Control<any>>());
+
+  function getField<TKey extends keyof T>(name: TKey): Control<T[TKey]> {
+    return fields().get(name)!;
+  }
+
+  const fieldArray: Accessor<Control<any>[]> = createMemo(() => [
+    ...fields().values(),
+  ]);
+
   const isValidating = createMemo(() => {
-    return _isValidating() || fieldList().some(f => f.isValidating())
-  })
-  const [isValidated, setIsValidated] = createSignal(false)
+    return _isValidating() || fieldArray().some((f) => f.isValidating());
+  });
 
-  createEffect(on(props.value, () => setIsValidated(false)))
+  createEffect(on(value, () => setIsValidated(false)));
 
   const validateSelf = async () => {
-    setIsValidating(true)
-    const v = props.value()
+    const v = value();
     try {
-      const err = (await props.validate?.(v)) ?? ''
-      setError(err)
+      const err = (await props.validate?.(v)) ?? "";
+
+      return !setError(err);
     } catch (e) {
-      setError(String(e))
+      setError(String(e));
+      return false;
     }
+  };
+
+  const validate = async () => {
     batch(() => {
-      setIsValidating(false)
-      setIsValidated(true)
-    })
-  }
+      setIsValidating(true);
+      setIsValidated(false);
+    });
+    const result = await Promise.all([
+      validateSelf(),
+      ...fieldArray().map((f) => f.validate()),
+    ]);
 
-  const validate = async (recursive = true) =>
-    recursive
-      ? Promise.all([validateSelf(), ...fieldList().map(f => f.validate(recursive))])
-      : validateSelf()
+    batch(() => {
+      setIsValidating(false);
+      setIsValidated(true);
+    });
+    return result.every(Boolean);
+  };
 
-  createEffect(() => {
-    if (method == 'onChange') {
-      createEffect(on(props.value, () => validate(false)))
-    }
-    if (method == 'onChangeAfterSubmit' && props.isSubmitted()) {
-      createEffect(on(props.value, () => validate(false)))
-    }
-    if (method == 'onChangeAfterBlur' && isTouched()) {
-      createEffect(on(props.value, () => validate(false)))
-    }
-  })
+  const isPristine = createMemo(() => initialValue === value());
+  const isDirty = () => !isPristine();
 
-  const onBlur = () => {
-    setIsTouched(true)
-    if (method == 'onBlur') {
-      validate(false)
-    }
-    if (method == 'onBlurAfterSubmit' && props.isSubmitted()) {
-      validate(false)
-    }
-  }
-
-  const isPristine = createMemo(() => initialValue === props.value())
-  const isDirty = () => !isPristine()
-
-  const isInvalid = createMemo(() => {
-    return (isValidated() && Boolean(error())) || fieldList().some(f => f.isInvalid())
-  })
+  const isInvalid = createMemo(
+    () =>
+      (isValidated() && Boolean(error())) ||
+      fieldArray().some((f) => f.isInvalid())
+  );
   const isValid = createMemo(() => {
-    return isValidated() && !isInvalid()
-  })
-  const [getRef, ref] = createSignal<any>()
-  const [isTouched, setIsTouched] = createSignal(false)
-
-  const errorList = createMemo(() => {
-    const list = [error()]
-    for (const field of fieldList()) {
-      list.push(...field.errorList())
-    }
-    // const result = await Promise.all(list)
-    return list.filter(Boolean)
-  })
+    return isValidated() && !isInvalid();
+  });
 
   const focusError = (): boolean => {
     if (getRef() && isInvalid()) {
-      getRef().focus()
-      return true
+      getRef().focus();
+      return true;
     }
 
-    for (const field of fieldList()) {
-      if (field.focusError()) return true
+    for (const field of fieldArray()) {
+      if (field.focusError()) return true;
     }
-    return false
-  }
-
-  const registerField = <TKey extends keyof T>(name: TKey, control: Control<T[TKey]>) =>
-    setFields(prev => {
-      if (Array.isArray(prev)) {
-        const array = [...prev]
-        array[Number(name)] = control
-        return array as Fields<T>
-      } else {
-        const obj = { ...prev }
-        //@ts-expect-error
-        obj[name] = control
-        return obj
-      }
-    })
-  const unregisterField = <TKey extends keyof T>(name: TKey) =>
-    setFields(prev => {
-      if (Array.isArray(prev)) {
-        const array = [...prev]
-        delete array[Number(name)]
-        return array as Fields<T>
-      } else {
-        const obj = { ...prev }
-        //@ts-expect-error
-        delete obj[name]
-        return obj
-      }
-    })
+    return false;
+  };
 
   return {
-    fields,
-    value: props.value,
-    setValue: props.setValue,
+    value,
+    setValue,
+    getField,
     initialValue,
+    fields,
+    setFields,
     error,
-    errorList,
     isDirty,
     isPristine,
     isValidating,
     isValidated,
     isValid,
     isInvalid,
-    isTouched,
-    isSubmitted: props.isSubmitted,
-    isSubmitting: props.isSubmitting,
     ref,
     focusError,
-    setIsTouched,
-    registerField,
-    unregisterField,
-    fieldList,
+    fieldArray,
     validate,
-    validationMethod: props.validationMethod ?? 'onSubmit',
-    onBlur,
-  }
+  };
 }

@@ -1,6 +1,6 @@
-import { Accessor, batch, createSignal, JSX } from 'solid-js'
+import { Accessor, batch, createEffect, createMemo, createSignal, JSX, on, Setter } from 'solid-js'
 
-import { Control, ControlProps, createControl, createFieldComponent, FieldComponent } from '.'
+import { Control, ControlProps, createControl, createFieldComponent, ExposedControlProps, FieldComponent, ValidationMethod } from '.'
 
 /**
  * Props for a Form component.
@@ -8,19 +8,17 @@ import { Control, ControlProps, createControl, createFieldComponent, FieldCompon
  */
 export type FormProps<TValue extends object> = Pick<
   ControlProps<TValue>,
-  'validate' | 'validationMethod'
+  'validate'
 > & {
   initialValue: TValue // Initial value object for the form.
+  validationMethod?: ValidationMethod
 }
 
 /**
  * API for a Form component, extending Control to manage the form state.
  * @template TValue - The type of the form's initial value object.
  */
-export type FormApi<TValue extends object> = Omit<
-  Control<TValue>,
-  'registerField' | 'unregisterField' | 'ref' | 'isTouched' | 'setIsTouched' | 'onBlur'
-> & {
+export type FormApi<TValue extends object> = ExposedControlProps<TValue> & {
   control: Control<TValue> // Control object managing the form state.
   Field: FieldComponent<TValue> // Component function to render a field within the form.
   handleSubmit: (
@@ -28,6 +26,9 @@ export type FormApi<TValue extends object> = Omit<
     onInvalid?: (control: Control<TValue>) => any,
   ) => Promise<void> // Handles form submission with optional callbacks based on form validity.
   response: Accessor<any> // Accessor to store the form submission response.
+  submitCount: Accessor<number>
+  isSubmitting: Accessor<boolean>
+  isSubmitted: Accessor<boolean>
 }
 
 /**
@@ -38,19 +39,26 @@ export type FormApi<TValue extends object> = Omit<
  */
 export function createForm<TValue extends object>(props: FormProps<TValue>): FormApi<TValue> {
   const [value, setValue] = createSignal(props.initialValue) // State signal for form value.
-  const [isSubmitted, setIsSubmitted] = createSignal(false) // State signal for form submission status.
+  const [submitCount, setSubmitCount] = createSignal(0)
+  const isSubmitted = createMemo(()=>submitCount()>0)
   const [isSubmitting, setIsSubmitting] = createSignal(false) // State signal for form submission process.
   const [response, setResponse] = createSignal<any>() // State signal for form submission response.
 
+
+  createEffect(()=>{
+    if (props.validationMethod=="onChange" || (props.validationMethod=="onChangeAfterSubmit" &&isSubmitted())){
+      createEffect(on(value,()=>control.validate()))
+    }
+  })
+
   // Create a Control object to manage form state and validation.
-  const control = createControl({
+  const control = createControl<TValue>({
     value,
     setValue,
-    isSubmitted,
-    isSubmitting,
     validate: props.validate,
-    validationMethod: props.validationMethod,
   })
+
+  
 
   // Handles form submission process.
   const handleSubmit = async (
@@ -58,9 +66,8 @@ export function createForm<TValue extends object>(props: FormProps<TValue>): For
     onInvalid?: (control: Control<TValue>) => any,
   ) => {
     try {
-      await control.validate(true) // Validate the form fields.
+      await control.validate() // Validate the form fields.
       batch(() => {
-        setIsSubmitted(true) // Set form submission status to true.
         setIsSubmitting(true) // Set form submitting status to true.
         setResponse() // Clear previous response.
       })
@@ -75,6 +82,7 @@ export function createForm<TValue extends object>(props: FormProps<TValue>): For
       setResponse(e) // Set response to error if validation fails.
     } finally {
       setIsSubmitting(false) // Set form submitting status to false.
+      setSubmitCount(v=>v+1)
     }
   }
 
@@ -84,6 +92,9 @@ export function createForm<TValue extends object>(props: FormProps<TValue>): For
     ...control, // Spread Control properties (value, setValue, etc.).
     handleSubmit,
     response,
+    isSubmitting,
+    submitCount,
+    isSubmitted,
     Field: createFieldComponent(control), // Field component pre-bound with Control.
   }
 }
