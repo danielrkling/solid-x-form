@@ -1,12 +1,12 @@
-import { describe, expect, it } from 'vitest'
-import { isServer, renderToString } from 'solid-js/web'
+import { describe, expect, it } from "vitest";
+import { isServer, renderToString } from "solid-js/web";
 
-describe('environment', () => {
-  it('runs on server', () => {
-    expect(typeof window).toBe('undefined')
-    expect(isServer).toBe(true)
-  })
-})
+describe("environment", () => {
+	it("runs on server", () => {
+		expect(typeof window).toBe("undefined");
+		expect(isServer).toBe(true);
+	});
+});
 
 // describe('createHello', () => {
 //   it('Returns a Hello World signal', () => {

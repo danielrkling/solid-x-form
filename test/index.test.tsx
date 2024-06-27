@@ -1,13 +1,13 @@
-import { createRoot, createSignal } from 'solid-js'
-import { isServer } from 'solid-js/web'
-import { describe, expect, it } from 'vitest'
+import { createRoot, createSignal } from "solid-js";
+import { isServer } from "solid-js/web";
+import { describe, expect, it } from "vitest";
 
-describe('environment', () => {
-  it('runs on server', () => {
-    expect(typeof window).toBe('object')
-    expect(isServer).toBe(false)
-  })
-})
+describe("environment", () => {
+	it("runs on server", () => {
+		expect(typeof window).toBe("object");
+		expect(isServer).toBe(false);
+	});
+});
 
 // describe('createHello', () => {
 //   it('Returns a Hello World signal', () =>

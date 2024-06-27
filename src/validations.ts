@@ -1,4 +1,4 @@
-import { Validate } from './control'
+import { Validate } from "./control";
 
 /**
  * Validation function to check if value is undefined, null, or blank.
@@ -6,8 +6,12 @@ import { Validate } from './control'
  * @param chain - Optional validation function to chain after length validation.
  * @returns A validation function for any type.
  */
-export function required(msg = 'required', chain?: Validate<any>): Validate<any> {
-  return v => (v === undefined || v === null || v === '' ? msg : chain?.(v) ?? '')
+export function required(
+	msg = "required",
+	chain?: Validate<any>,
+): Validate<any> {
+	return (v) =>
+		v === undefined || v === null || v === "" ? msg : chain?.(v) ?? "";
 }
 
 /**
@@ -19,11 +23,11 @@ export function required(msg = 'required', chain?: Validate<any>): Validate<any>
  * @returns A validation function for the specified value type `T`.
  */
 export function custom<T>(
-  fn: (value: T) => boolean,
-  msg: string,
-  chain?: Validate<T>,
+	fn: (value: T) => boolean,
+	msg: string,
+	chain?: Validate<T>,
 ): Validate<T> {
-  return (v: T) => (fn(v) ? msg : chain?.(v) ?? '')
+	return (v: T) => (fn(v) ? msg : chain?.(v) ?? "");
 }
 
 /**
@@ -34,11 +38,11 @@ export function custom<T>(
  * @returns A validation function for strings or arrays.
  */
 export function minLength(
-  length: number,
-  msg: string,
-  chain?: Validate<string | any[]>,
+	length: number,
+	msg: string,
+	chain?: Validate<string | any[]>,
 ): Validate<string | any[]> {
-  return v => (v.length < length ? msg : chain?.(v) ?? '')
+	return (v) => (v.length < length ? msg : chain?.(v) ?? "");
 }
 
 /**
@@ -49,11 +53,11 @@ export function minLength(
  * @returns A validation function for strings or arrays.
  */
 export function maxLength(
-  length: number,
-  msg: string,
-  chain?: Validate<string | any[]>,
+	length: number,
+	msg: string,
+	chain?: Validate<string | any[]>,
 ): Validate<string | any[]> {
-  return v => (v.length > length ? msg : chain?.(v) ?? '')
+	return (v) => (v.length > length ? msg : chain?.(v) ?? "");
 }
 
 /**
@@ -64,11 +68,11 @@ export function maxLength(
  * @returns A validation function for numbers or dates.
  */
 export function max(
-  max: number | Date,
-  msg: string,
-  chain?: Validate<number | Date>,
+	max: number | Date,
+	msg: string,
+	chain?: Validate<number | Date>,
 ): Validate<number | Date> {
-  return v => (v > max ? msg : chain?.(v) ?? '')
+	return (v) => (v > max ? msg : chain?.(v) ?? "");
 }
 
 /**
@@ -79,11 +83,11 @@ export function max(
  * @returns A validation function for numbers or dates.
  */
 export function min(
-  min: number | Date,
-  msg: string,
-  chain?: Validate<number | Date>,
+	min: number | Date,
+	msg: string,
+	chain?: Validate<number | Date>,
 ): Validate<number | Date> {
-  return v => (v < min ? msg : chain?.(v) ?? '')
+	return (v) => (v < min ? msg : chain?.(v) ?? "");
 }
 
 /**
@@ -93,8 +97,12 @@ export function min(
  * @param chain - Optional validation function to chain after pattern validation.
  * @returns A validation function for strings.
  */
-export function pattern(pattern: RegExp, msg: string, chain?: Validate<string>): Validate<string> {
-  return v => (pattern.test(v) ? '' : chain?.(v) ?? msg)
+export function pattern(
+	pattern: RegExp,
+	msg: string,
+	chain?: Validate<string>,
+): Validate<string> {
+	return (v) => (pattern.test(v) ? "" : chain?.(v) ?? msg);
 }
 
 /**
@@ -104,6 +112,10 @@ export function pattern(pattern: RegExp, msg: string, chain?: Validate<string>):
  * @param chain - Optional validation function to chain after equals validation.
  * @returns A validation function for any type of value.
  */
-export function equals(value: any, msg: string, chain?: Validate<any>): Validate<any> {
-  return v => (v === value ? '' : chain?.(v) ?? msg)
+export function equals(
+	value: any,
+	msg: string,
+	chain?: Validate<any>,
+): Validate<any> {
+	return (v) => (v === value ? "" : chain?.(v) ?? msg);
 }
