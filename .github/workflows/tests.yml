@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build
 
 on:
   push:
@@ -16,28 +16,37 @@ jobs:
         with:
           fetch-depth: 2
 
-      - uses: pnpm/action-setup@v2.2.4
-
       - name: Setup Node.js environment
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install
-
-      - name: Build
-        run: pnpm run build
-
-      - name: Test
-        run: pnpm run test
-        env:
-          CI: true
+        run: npm install
 
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
         with:
-          version: latest
+          version: lates
+
+      - name: Test
+        run: npm run test
+        env:
+          CI: true
+
       - name: Run Biome
-        run: biome ci .
+        run: biome format ./src --write
+
+      - name: Commit and Push
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Format'
+
+      - name: Build
+        run: npm run build
+
+
+      - name: Commit and Push
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Build'
