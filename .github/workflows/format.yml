@@ -16,3 +16,7 @@ jobs:
           version: latest
       - name: Run Biome Format
         run: biome format --write
+      - name: Commit and Push
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Format'
