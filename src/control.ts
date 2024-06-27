@@ -1,4 +1,3 @@
-import { validate } from '@modular-forms/solid'
 import { Accessor, Setter, batch, createEffect, createMemo, createSignal, on } from 'solid-js'
 
 // export type Fields<T> = T extends Array<infer TValue>
