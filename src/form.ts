@@ -39,7 +39,7 @@ export type FormApi<TValue extends object> = ExposedControlProps<TValue> & {
 	control: Control<TValue>; // Control object managing the form state.
 	Field: FieldComponent<TValue>; // Component function to render a field within the form.
 	handleSubmit: (
-		onValid?: (value: TValue,control: Control<TValue>) => unknown,
+		onValid?: (value: TValue, control: Control<TValue>) => unknown,
 		onInvalid?: (value: TValue, control: Control<TValue>) => unknown,
 	) => Promise<void>; // Handles form submission with optional callbacks based on form validity.
 	response: Accessor<unknown>; // Accessor to store the form submission response.
@@ -95,7 +95,7 @@ export function createForm<TValue extends object>(
 				setResponse(await onValid?.(value(), control));
 			} else {
 				control.focusError(); // Focus on the first field with validation error.
-				setResponse(await onInvalid?.(value(),control)); // Execute onInvalid callback and set response.
+				setResponse(await onInvalid?.(value(), control)); // Execute onInvalid callback and set response.
 			}
 		} catch (e) {
 			setResponse(e); // Set response to error if validation fails.
