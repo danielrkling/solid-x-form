@@ -28,6 +28,7 @@ jobs:
         uses: biomejs/setup-biome@v2
         with:
           version: lates
+          working-dir: ""
 
       - name: Test
         run: npm run test
