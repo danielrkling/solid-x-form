@@ -18,7 +18,7 @@ import {
 	createFieldComponent,
 	registerField,
 	unregisterField,
-} from ".";
+} from "./";
 
 /**
  * Props for an ArrayField component.

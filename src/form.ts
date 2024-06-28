@@ -17,7 +17,7 @@ import {
 	type ExposedControlProps,
 	type FieldComponent,
 	type ValidationMethod,
-} from ".";
+} from "./";
 
 /**
  * Props for a Form component.
