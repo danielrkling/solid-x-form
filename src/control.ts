@@ -16,8 +16,7 @@ import {
 //     }
 //   : {};
 
-
-export type FieldTypes = any
+export type FieldTypes = any;
 
 export type Fields<T> = Map<keyof T, Control<FieldTypes>>;
 
