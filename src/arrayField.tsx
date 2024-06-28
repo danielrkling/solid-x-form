@@ -1,7 +1,7 @@
 import {
 	Index,
-	JSX,
-	Setter,
+	type JSX,
+	type Setter,
 	createMemo,
 	createSignal,
 	onCleanup,
@@ -9,10 +9,10 @@ import {
 } from "solid-js";
 
 import {
-	Control,
-	ExposedControlProps,
-	FieldApi,
-	Validate,
+	type Control,
+	type ExposedControlProps,
+	type FieldApi,
+	type Validate,
 	createControl,
 	createField,
 	createFieldComponent,
@@ -30,7 +30,7 @@ export type ArrayFieldProps<
 	TParent,
 	TKey extends keyof TParent = keyof TParent,
 	//@ts-expect-error
-	TItem extends any = TParent[TKey][number],
+	TItem = TParent[TKey][number],
 > = {
 	control: Control<TParent>; // Control object managing the parent form.
 	name: TKey; // Name of the array field in the parent object.
@@ -47,7 +47,7 @@ export type ArrayFieldApi<
 	TParent,
 	TKey extends keyof TParent = keyof TParent,
 	//@ts-expect-error
-	TItem extends any = TParent[TKey][number],
+	TItem = TParent[TKey][number],
 > = ExposedControlProps<TItem[]> &
 	ArrayMethods<TItem> & {
 		control: Control<TItem[]>; // Control object managing the array field.
@@ -84,7 +84,7 @@ export function createArrayField<
 	TParent,
 	TKey extends keyof TParent = keyof TParent,
 	//@ts-expect-error
-	TItem extends any = TParent[TKey][number],
+	TItem = TParent[TKey][number],
 >(
 	props: ArrayFieldProps<TParent, TKey, TItem>,
 ): ArrayFieldApi<TParent, TKey, TItem> {
@@ -158,7 +158,7 @@ export function ArrayField<
 	TParent,
 	TKey extends keyof TParent = keyof TParent,
 	//@ts-expect-error
-	TItem extends any = TParent[TKey][number],
+	TItem = TParent[TKey][number],
 >(
 	props: ArrayFieldProps<TParent, TKey, TItem> & {
 		children: (field: ArrayFieldApi<TParent, TKey, TItem>) => JSX.Element; // Children function receiving ArrayFieldApi.

@@ -1,6 +1,6 @@
 import {
-	Accessor,
-	Setter,
+	type Accessor,
+	type Setter,
 	batch,
 	createEffect,
 	createMemo,
@@ -16,11 +16,16 @@ import {
 //     }
 //   : {};
 
-export type Fields<T> = Map<keyof T, Control<any>>;
+
+export type FieldTypes = any
+
+export type Fields<T> = Map<keyof T, Control<FieldTypes>>;
 
 export type KeyOf<TParent extends object> = keyof TParent;
 
 export type ForceLookup<T, K> = T[K & keyof T]; // no error
+
+export type Ref = HTMLElement;
 
 export type ValidationMethod =
 	| "onChange"
@@ -61,7 +66,7 @@ export type Control<T> = {
 	getField: <TKey extends keyof T>(name: TKey) => Control<T[TKey]>;
 
 	/** Accessor for managing the list of fields as an array. */
-	fieldArray: Accessor<Control<any>[]>;
+	fieldArray: Accessor<Control<FieldTypes>[]>;
 
 	/** Accessor for the reactive value of the controlled component. */
 	value: Accessor<T>;
@@ -97,7 +102,7 @@ export type Control<T> = {
 	isInvalid: Accessor<boolean>;
 
 	/** Reference to the controlled component element. */
-	ref: any;
+	ref: Setter<Ref | undefined>;
 
 	/** Function to focus on the first error within the controlled component. */
 	focusError: () => boolean;
@@ -126,18 +131,22 @@ export function createControl<T>(props: ControlProps<T>): Control<T> {
 	const [error, setError] = createSignal("");
 	const [_isValidating, setIsValidating] = createSignal(false);
 	const [isValidated, setIsValidated] = createSignal(false);
-	const [getRef, ref] = createSignal<any>();
+	const [getRef, ref] = createSignal<Ref>();
 
 	//   const [fields, setFields] = createSignal<Fields<T>>(
 	//     (Array.isArray(initialValue) ? [] : {}) as Fields<T>
 	//   );
-	const [fields, setFields] = createSignal(new Map<keyof T, Control<any>>());
+	const [fields, setFields] = createSignal(
+		new Map<keyof T, Control<FieldTypes>>(),
+	);
 
 	function getField<TKey extends keyof T>(name: TKey): Control<T[TKey]> {
-		return fields().get(name)!;
+		const field = fields().get(name);
+		if (!field) throw new Error(`Field "${String(name)}" not registered`);
+		return field;
 	}
 
-	const fieldArray: Accessor<Control<any>[]> = createMemo(() => [
+	const fieldArray: Accessor<Control<FieldTypes>[]> = createMemo(() => [
 		...fields().values(),
 	]);
 
@@ -189,8 +198,9 @@ export function createControl<T>(props: ControlProps<T>): Control<T> {
 	});
 
 	const focusError = (): boolean => {
-		if (getRef() && isInvalid()) {
-			getRef().focus();
+		const elem = getRef();
+		if (elem && isInvalid()) {
+			elem.focus();
 			return true;
 		}
 

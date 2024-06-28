@@ -1,11 +1,11 @@
 import type { ComponentProps } from "solid-js";
-import type { Control } from "./control";
+import type { Control, FieldTypes } from "./control";
 import type { FieldApi } from "./field";
 
 export function registerField<T>(
 	parentControl: Control<T>,
 	name: keyof T,
-	childControl: Control<any>,
+	childControl: Control<FieldTypes>,
 ): void {
 	parentControl.setFields((prev) => new Map(prev).set(name, childControl));
 }
@@ -21,11 +21,12 @@ export function unregisterField<T>(
 	});
 }
 
-export function getErrorList(control: Control<any>): string[] {
+export function getErrorList<T>(control: Control<T>): string[] {
 	const list = [control.error()];
-	control.fields().forEach((c) => {
-		list.push(...getErrorList(c));
-	});
+	for (const [name, field] of control.fields()) {
+		list.push(...getErrorList(field));
+	}
+
 	return list.filter(Boolean);
 }
 
@@ -34,16 +35,16 @@ export function getErrorMap<T>(
 ): Record<keyof T, string> & Record<string, string> {
 	return Object.fromEntries(getErrorEntries(control, ""));
 
-	function getErrorEntries(control: Control<any>, name: string) {
+	function getErrorEntries<T>(control: Control<T>, name: string) {
 		const list = [[name, control.error()]];
-		control.fields().forEach((value, key) => {
+		for (const [fieldName, field] of control.fields()) {
 			list.push(
 				...getErrorEntries(
-					value,
-					name ? name + "." + String(key) : String(key),
+					field,
+					name ? `${name}.${String(fieldName)}` : String(fieldName),
 				),
 			);
-		});
+		}
 		return list;
 	}
 }

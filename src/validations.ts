@@ -1,4 +1,4 @@
-import { Validate } from "./control";
+import type { Validate } from "./control";
 
 /**
  * Validation function to check if value is undefined, null, or blank.
@@ -6,10 +6,10 @@ import { Validate } from "./control";
  * @param chain - Optional validation function to chain after length validation.
  * @returns A validation function for any type.
  */
-export function required(
+export function required<T>(
 	msg = "required",
-	chain?: Validate<any>,
-): Validate<any> {
+	chain?: Validate<T>,
+): Validate<T> {
 	return (v) =>
 		v === undefined || v === null || v === "" ? msg : chain?.(v) ?? "";
 }
@@ -37,11 +37,11 @@ export function custom<T>(
  * @param chain - Optional validation function to chain after length validation.
  * @returns A validation function for strings or arrays.
  */
-export function minLength(
+export function minLength<T>(
 	length: number,
 	msg: string,
-	chain?: Validate<string | any[]>,
-): Validate<string | any[]> {
+	chain?: Validate<string | T[]>,
+): Validate<string | T[]> {
 	return (v) => (v.length < length ? msg : chain?.(v) ?? "");
 }
 
@@ -52,11 +52,11 @@ export function minLength(
  * @param chain - Optional validation function to chain after length validation.
  * @returns A validation function for strings or arrays.
  */
-export function maxLength(
+export function maxLength<T>(
 	length: number,
 	msg: string,
-	chain?: Validate<string | any[]>,
-): Validate<string | any[]> {
+	chain?: Validate<string | T[]>,
+): Validate<string | T[]> {
 	return (v) => (v.length > length ? msg : chain?.(v) ?? "");
 }
 
@@ -112,10 +112,10 @@ export function pattern(
  * @param chain - Optional validation function to chain after equals validation.
  * @returns A validation function for any type of value.
  */
-export function equals(
-	value: any,
+export function equals<T>(
+	value: T,
 	msg: string,
-	chain?: Validate<any>,
-): Validate<any> {
+	chain?: Validate<T>,
+): Validate<T> {
 	return (v) => (v === value ? "" : chain?.(v) ?? msg);
 }

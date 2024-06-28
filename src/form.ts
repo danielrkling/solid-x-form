@@ -1,22 +1,22 @@
 import {
-	Accessor,
+	type Accessor,
 	batch,
 	createEffect,
 	createMemo,
 	createSignal,
-	JSX,
+	type JSX,
 	on,
 	Setter,
 } from "solid-js";
 
 import {
-	Control,
-	ControlProps,
+	type Control,
+	type ControlProps,
 	createControl,
 	createFieldComponent,
-	ExposedControlProps,
-	FieldComponent,
-	ValidationMethod,
+	type ExposedControlProps,
+	type FieldComponent,
+	type ValidationMethod,
 } from ".";
 
 /**
@@ -39,10 +39,10 @@ export type FormApi<TValue extends object> = ExposedControlProps<TValue> & {
 	control: Control<TValue>; // Control object managing the form state.
 	Field: FieldComponent<TValue>; // Component function to render a field within the form.
 	handleSubmit: (
-		onValid?: (value: TValue) => any,
-		onInvalid?: (control: Control<TValue>) => any,
+		onValid?: (value: TValue,control: Control<TValue>) => unknown,
+		onInvalid?: (value: TValue, control: Control<TValue>) => unknown,
 	) => Promise<void>; // Handles form submission with optional callbacks based on form validity.
-	response: Accessor<any>; // Accessor to store the form submission response.
+	response: Accessor<unknown>; // Accessor to store the form submission response.
 	submitCount: Accessor<number>;
 	isSubmitting: Accessor<boolean>;
 	isSubmitted: Accessor<boolean>;
@@ -61,12 +61,12 @@ export function createForm<TValue extends object>(
 	const [submitCount, setSubmitCount] = createSignal(0);
 	const isSubmitted = createMemo(() => submitCount() > 0);
 	const [isSubmitting, setIsSubmitting] = createSignal(false); // State signal for form submission process.
-	const [response, setResponse] = createSignal<any>(); // State signal for form submission response.
+	const [response, setResponse] = createSignal<unknown>(); // State signal for form submission response.
 
 	createEffect(() => {
 		if (
-			props.validationMethod == "onChange" ||
-			(props.validationMethod == "onChangeAfterSubmit" && isSubmitted())
+			props.validationMethod === "onChange" ||
+			(props.validationMethod === "onChangeAfterSubmit" && isSubmitted())
 		) {
 			createEffect(on(value, () => control.validate()));
 		}
@@ -81,8 +81,8 @@ export function createForm<TValue extends object>(
 
 	// Handles form submission process.
 	const handleSubmit = async (
-		onValid?: (value: TValue) => any,
-		onInvalid?: (control: Control<TValue>) => any,
+		onValid?: (value: TValue, control: Control<TValue>) => unknown,
+		onInvalid?: (value: TValue, control: Control<TValue>) => unknown,
 	) => {
 		try {
 			await control.validate(); // Validate the form fields.
@@ -92,10 +92,10 @@ export function createForm<TValue extends object>(
 			});
 			if (control.isValid()) {
 				// If form is valid, execute onValid callback and set response.
-				setResponse(await onValid?.(value()));
+				setResponse(await onValid?.(value(), control));
 			} else {
 				control.focusError(); // Focus on the first field with validation error.
-				setResponse(await onInvalid?.(control)); // Execute onInvalid callback and set response.
+				setResponse(await onInvalid?.(value(),control)); // Execute onInvalid callback and set response.
 			}
 		} catch (e) {
 			setResponse(e); // Set response to error if validation fails.
